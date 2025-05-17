@@ -1,132 +1,158 @@
 import React, { useState } from "react";
+import "./ReservationForm.css";
 
-export default function ReservationForm() {
+function ReservationForm() {
     const [formData, setFormData] = useState({
         guestName: "",
         email: "",
-        phoneNumber: "",
+        phone: "",
         checkInDate: "",
         checkOutDate: "",
-        roomType: "single",
+        numberOfGuests: 1,
+        roomType: "Single",
     });
-    const [message, setMessage] = useState("");
 
-    const handleChange = (e) =>
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        const { name, value } = e.target;
 
-    const handleSubmit = (e) => {
+        // numberOfGuests integer olarak alınmalı
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name === "numberOfGuests" ? parseInt(value) || 1 : value,
+        }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        fetch("http://localhost:8080/api/reservations", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-        })
-            .then(async (res) => {
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(text);
-                }
-                return res.text();
-            })
-            .then((text) => {
-                setMessage(text);
+
+        try {
+            const response = await fetch("http://localhost:8080/api/reservations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const errorMsg = await response.text();
+                alert("Hata: " + errorMsg);
+            } else {
+                alert("Rezervasyon gönderildi!");
                 setFormData({
                     guestName: "",
                     email: "",
-                    phoneNumber: "",
+                    phone: "",
                     checkInDate: "",
                     checkOutDate: "",
-                    roomType: "single",
+                    numberOfGuests: 1,
+                    roomType: "Single",
                 });
-            })
-            .catch((err) => {
-                setMessage("Error: " + err.message);
-            });
+            }
+        } catch (error) {
+            alert("Sunucuya bağlanırken hata oluştu: " + error.message);
+        }
     };
 
     return (
-        <div className="max-w-lg mx-auto mt-12 p-8 bg-white rounded-xl shadow-lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Guest Name</label>
-                    <input
-                        type="text"
-                        name="guestName"
-                        value={formData.guestName}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Phone Number</label>
-                    <input
-                        type="text"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Check-in Date</label>
-                    <input
-                        type="date"
-                        name="checkInDate"
-                        value={formData.checkInDate}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Check-out Date</label>
-                    <input
-                        type="date"
-                        name="checkOutDate"
-                        value={formData.checkOutDate}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Room Type</label>
-                    <select
-                        name="roomType"
-                        value={formData.roomType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                        <option value="single">Single</option>
-                        <option value="double">Double</option>
-                        <option value="suite">Suite</option>
-                    </select>
-                </div>
+        <form onSubmit={handleSubmit} className="form-container">
+            <div className="form-group">
+                <label className="form-label">Misafir Adı</label>
+                <input
+                    type="text"
+                    name="guestName"
+                    placeholder="Adınız Soyadınız"
+                    value={formData.guestName}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                />
+            </div>
 
-                <button
-                    type="submit"
-                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition"
+            <div className="form-group">
+                <label className="form-label">E-posta</label>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="ornek@eposta.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">Telefon Numarası</label>
+                <input
+                    type="tel"
+                    name="phone"
+                    placeholder="5xxxxxxxxx"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="form-input"
+                    pattern="[0-9]{10}"
+                    title="10 haneli telefon numarası giriniz"
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">Giriş Tarihi</label>
+                <input
+                    type="date"
+                    name="checkInDate"
+                    value={formData.checkInDate}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">Çıkış Tarihi</label>
+                <input
+                    type="date"
+                    name="checkOutDate"
+                    value={formData.checkOutDate}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">Misafir Sayısı</label>
+                <input
+                    type="number"
+                    name="numberOfGuests"
+                    min="1"
+                    value={formData.numberOfGuests}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">Oda Tipi</label>
+                <select
+                    name="roomType"
+                    value={formData.roomType}
+                    onChange={handleChange}
+                    required
+                    className="form-select"
                 >
-                    Submit Reservation
-                </button>
-            </form>
+                    <option value="Single">Single</option>
+                    <option value="Double">Double</option>
+                    <option value="Suite">Suite</option>
+                </select>
+            </div>
 
-            {message && (
-                <p className="mt-6 text-center font-semibold text-green-600">{message}</p>
-            )}
-        </div>
+            <button type="submit" className="submit-button">
+                Rezervasyon Yap
+            </button>
+        </form>
     );
 }
+
+export default ReservationForm;
